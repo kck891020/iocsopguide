@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOC 관제 SOP 가이드</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2234;
+  --bg-card-hover: #1f2a40;
+  --bg-input: #0d1320;
+  --border: #2a3650;
+  --border-focus: #3b82f6;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8899b4;
+  --text-dim: #556380;
+  --accent-blue: #3b82f6;
+  --accent-blue-dim: #1e3a6e;
+  --accent-red: #ef4444;
+  --accent-red-dim: #7f1d1d;
+  --accent-orange: #f59e0b;
+  --accent-orange-dim: #78350f;
+  --accent-green: #10b981;
+  --accent-green-dim: #064e3b;
+  --accent-cyan: #06b6d4;
+  --accent-magenta: #a855f7;
+  --sev-critical: #ef4444;
+  --sev-high: #f59e0b;
+  --sev-medium: #06b6d4;
+  --sev-low: #10b981;
+  --cat-ecar: #ef4444;
+  --cat-fire: #f59e0b;
+  --cat-mech: #3b82f6;
+  --cat-elec: #a855f7;
+  --header-height: 64px;
+  --sidebar-width: 280px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --transition: 0.2s ease;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── 헤더 ─── */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-height);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logo .logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 2px 12px rgba(59,130,246,0.3);
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.header-subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent-green);
+  background: var(--accent-green-dim);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+.header-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ─── 레이아웃 ─── */
+.layout {
+  display: flex;
+  margin-top: var(--header-height);
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* ─── 사이드바 ─── */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  padding: 16px 0;
+  position: fixed;
+  top: var(--header-height);
+  bottom: 0;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.sidebar-search {
+  padding: 0 16px 16px;
+}
+
+.sidebar-search input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px 10px 36px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none;
+  transition: var(--transition);
+}
+
+.sidebar-search input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.sidebar-search {
+  position: relative;
+}
+
+.sidebar-search::before {
+  content: '🔍';
+  position: absolute;
+  left: 28px;
+  top: 10px;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.sidebar-category {
+  margin-bottom: 4px;
+}
+
+.sidebar-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+}
+
+.sidebar-cat-header:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.sidebar-cat-header .cat-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sidebar-cat-header .cat-count {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-dim);
+  background: var(--bg-card);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.sidebar-alarm-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 32px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  border-left: 3px solid transparent;
+  color: var(--text-secondary);
+}
+
+.sidebar-alarm-item:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.sidebar-alarm-item.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-left-color: var(--accent-blue);
+}
+
+.sidebar-alarm-item .sev-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sidebar-alarm-item .alarm-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ─── 메인 컨텐츠 ─── */
+.main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  padding: 24px 32px;
+  max-width: 900px;
+}
+
+/* ─── 홈 화면 ─── */
+.home-view {
+  padding-top: 40px;
+}
+
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.stat-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.home-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.cat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.cat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+}
+
+.cat-card[data-cat="ecar"]::before { background: var(--cat-ecar); }
+.cat-card[data-cat="fire"]::before { background: var(--cat-fire); }
+.cat-card[data-cat="mech"]::before { background: var(--cat-mech); }
+.cat-card[data-cat="elec"]::before { background: var(--cat-elec); }
+
+.cat-card:hover {
+  border-color: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.cat-card-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.cat-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cat-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.cat-card-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ─── SOP 상세 뷰 ─── */
+.sop-view { display: none; }
+
+.sop-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  margin-bottom: 16px;
+  border: none;
+  background: none;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.sop-back:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.sop-header {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sop-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+}
+
+.sop-header[data-sev="critical"]::before { background: var(--sev-critical); }
+.sop-header[data-sev="high"]::before { background: var(--sev-high); }
+.sop-header[data-sev="medium"]::before { background: var(--sev-medium); }
+.sop-header[data-sev="low"]::before { background: var(--sev-low); }
+
+.sop-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sop-header-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-blue);
+  background: var(--accent-blue-dim);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.sop-header .sev-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.sev-badge.critical { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+.sev-badge.high { background: var(--accent-orange-dim); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
+.sev-badge.medium { background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); }
+.sev-badge.low { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+
+.sop-header-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.sop-header-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.sop-header-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sop-tag {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--bg-primary);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* Case 분류 */
+.case-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.case-card {
+  border-radius: var(--radius);
+  padding: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+
+.case-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.case-card-cond {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* SOP 단계 */
+.steps-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.step-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  position: relative;
+}
+
+.step-item:last-child { border-bottom: none; }
+
+.step-num {
+  width: 36px; height: 36px;
+  background: var(--accent-blue-dim);
+  border: 2px solid var(--accent-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+.step-content { flex: 1; }
+
+.step-action {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.step-detail {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.step-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.step-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+  background: var(--bg-primary);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.step-meta-item.time-urgent {
+  color: var(--accent-red);
+  background: var(--accent-red-dim);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+/* 경고/연락처/교차참조 */
+.warn-section, .contact-section, .crossref-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.warn-item {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--accent-orange);
+  line-height: 1.5;
+}
+
+.warn-item::before {
+  content: '⚠';
+  flex-shrink: 0;
+}
+
+.contact-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px;
+}
+
+.contact-item:last-child { border-bottom: none; }
+
+.contact-role { color: var(--text-secondary); }
+
+.contact-phone {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+}
+
+.crossref-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 13px;
+}
+
+.crossref-item:hover {
+  border-color: var(--accent-blue);
+  background: var(--bg-card-hover);
+}
+
+.crossref-arrow {
+  color: var(--accent-blue);
+  font-size: 16px;
+}
+
+.crossref-cond {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ─── 반응형 ─── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .home-stats { grid-template-columns: repeat(2, 1fr); }
+  .home-category-grid { grid-template-columns: 1fr; }
+  .header { padding: 0 12px; }
+  .header-subtitle { display: none; }
+  .mobile-menu-btn { display: block; }
+}
+
+/* ─── 스크롤바 ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ─── 애니메이션 ─── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-in:nth-child(1) { animation-delay: 0.05s; }
+.animate-in:nth-child(2) { animation-delay: 0.1s; }
+.animate-in:nth-child(3) { animation-delay: 0.15s; }
+.animate-in:nth-child(4) { animation-delay: 0.2s; }
+
+/* 검색 결과 하이라이트 */
+.highlight {
+  background: rgba(59,130,246,0.25);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* 결과 없음 */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+}
+
+.no-results-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-results-text {
+  font-size: 15px;
+}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-icon">S</div>
+    <div>
+      <div class="header-title">IOC 관제 SOP 가이드</div>
+      <div class="header-subtitle">INTEGRATED OPERATION CENTER</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="header-badge" id="statusBadge">● ONLINE</span>
+    <span class="header-time" id="headerTime"></span>
+  </div>
+</header>
+
+<!-- 레이아웃 -->
+<div class="layout">
+  <!-- 사이드바 -->
+  <nav class="sidebar" id="sidebar"></nav>
+
+  <!-- 메인 -->
+  <main class="main" id="mainContent"></main>
+</div>
+
+<script>
+// ─── SOP 데이터 (인라인) ─────────────────────────────
+// sop_data.json 내용을 여기에 임베드
+let SOP_DATA = null;
+
+// JSON 데이터를 인라인으로 포함
+const SOP_JSON = `PLACEHOLDER_JSON`;
+
+// ─── 초기화 ──────────────────────────────────────────
+async function init() {
+  // JSON 로드 시도
+  try {
+    const resp = await fetch('sop_data.json');
+    if (resp.ok) {
+      SOP_DATA = await resp.json();
+    }
+  } catch(e) {}
+
+  // 외부 파일 실패 시 인라인 데이터 사용
+  if (!SOP_DATA) {
+    try { SOP_DATA = JSON.parse(SOP_JSON); } catch(e) {}
+  }
+
+  if (!SOP_DATA) {
+    document.getElementById('mainContent').innerHTML =
+      '<div class="no-results"><div class="no-results-icon">⚠️</div>' +
+      '<div class="no-results-text">sop_data.json 파일을 찾을 수 없습니다.<br>같은 폴더에 sop_data.json을 넣어주세요.</div></div>';
+    return;
+  }
+
+  renderSidebar();
+  showHome();
+  startClock();
+}
+
+// ─── 시계 ────────────────────────────────────────────
+function startClock() {
+  function tick() {
+    const now = new Date();
+    const str = now.toLocaleString('ko-KR', {
+      year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit',
+      hour12: false
+    });
+    document.getElementById('headerTime').textContent = str;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ─── 유틸 ────────────────────────────────────────────
+function getCatMap() {
+  const m = {};
+  SOP_DATA.categories.forEach(c => m[c.id] = c);
+  return m;
+}
+
+function getAlarm(id) {
+  return SOP_DATA.alarms.find(a => a.id === id);
+}
+
+function getSevInfo(sev) {
+  return SOP_DATA.severity_levels[sev];
+}
+
+function getCatColor(catId) {
+  return { ecar:'var(--cat-ecar)', fire:'var(--cat-fire)', mech:'var(--cat-mech)', elec:'var(--cat-elec)' }[catId] || '#888';
+}
+
+function getSevColor(sev) {
+  return { critical:'var(--sev-critical)', high:'var(--sev-high)', medium:'var(--sev-medium)', low:'var(--sev-low)' }[sev] || '#888';
+}
+
+// ─── 사이드바 ────────────────────────────────────────
+function renderSidebar() {
+  const sb = document.getElementById('sidebar');
+  let html = '';
+
+  // 검색
+  html += `<div class="sidebar-search">
+    <input type="text" id="searchInput" placeholder="SOP 검색..." oninput="onSearch(this.value)">
+  </div>`;
+
+  // 카테고리별 알람
+  const catMap = getCatMap();
+  SOP_DATA.categories.forEach(cat => {
+    const alarms = SOP_DATA.alarms.filter(a => a.category === cat.id);
+    html += `<div class="sidebar-category" id="cat-${cat.id}">
+      <div class="sidebar-cat-header" onclick="toggleCat('${cat.id}')">
+        <span class="cat-dot" style="background:${getCatColor(cat.id)}"></span>
+        ${cat.icon} ${cat.name}
+        <span class="cat-count">${alarms.length}</span>
+      </div>
+      <div class="sidebar-alarm-list" id="catList-${cat.id}">`;
+
+    alarms.forEach(alarm => {
+      const sev = getSevInfo(alarm.severity);
+      html += `<div class="sidebar-alarm-item" id="nav-${alarm.id}"
+        data-id="${alarm.id}" onclick="showSOP('${alarm.id}')">
+        <span class="sev-dot" style="background:${getSevColor(alarm.severity)}"></span>
+        <span class="alarm-name">${alarm.name}</span>
+        <span class="alarm-id">${alarm.id}</span>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  sb.innerHTML = html;
+}
+
+function toggleCat(catId) {
+  const list = document.getElementById('catList-' + catId);
+  list.style.display = list.style.display === 'none' ? '' : 'none';
+}
+
+// ─── 검색 ────────────────────────────────────────────
+function onSearch(keyword) {
+  const kw = keyword.toLowerCase().trim();
+  
+  if (!kw) {
+    // 전부 보이기
+    document.querySelectorAll('.sidebar-alarm-item').forEach(el => el.style.display = '');
+    document.querySelectorAll('.sidebar-alarm-list').forEach(el => el.style.display = '');
+    document.querySelectorAll('.sidebar-cat-header').forEach(el => el.style.display = '');
+    return;
+  }
+
+  SOP_DATA.categories.forEach(cat => {
+    const alarms = SOP_DATA.alarms.filter(a => a.category === cat.id);
+    let visibleCount = 0;
+
+    alarms.forEach(alarm => {
+      const searchable = [
+        alarm.name, alarm.description,
+        ...alarm.tags,
+        ...alarm.sop_steps.map(s => s.action + ' ' + s.detail),
+        ...(alarm.warnings || [])
+      ].join(' ').toLowerCase();
+
+      const el = document.getElementById('nav-' + alarm.id);
+      if (searchable.includes(kw)) {
+        el.style.display = '';
+        visibleCount++;
+      } else {
+        el.style.display = 'none';
+      }
+    });
+
+    const catHeader = document.querySelector(`#cat-${cat.id} .sidebar-cat-header`);
+    const catList = document.getElementById('catList-' + cat.id);
+    if (visibleCount === 0) {
+      catHeader.style.display = 'none';
+    } else {
+      catHeader.style.display = '';
+      catList.style.display = '';
+    }
+  });
+}
+
+// ─── 홈 화면 ─────────────────────────────────────────
+function showHome() {
+  // 사이드바 active 해제
+  document.querySelectorAll('.sidebar-alarm-item').forEach(el => el.classList.remove('active'));
+
+  const catMap = getCatMap();
+  const totalSteps = SOP_DATA.alarms.reduce((s,a) => s + a.sop_steps.length, 0);
+
+  let html = `<div class="home-view">
+    <div class="home-stats">
+      <div class="stat-card animate-in">
+        <div class="stat-number">${SOP_DATA.alarms.length}</div>
+        <div class="stat-label">알람 유형</div>
+      </div>
+      <div class="stat-card animate-in">
+        <div class="stat-number">${totalSteps}</div>
+        <div class="stat-label">SOP 단계</div>
+      </div>
+      <div class="stat-card animate-in">
+        <div class="stat-number">${SOP_DATA.cross_references.length}</div>
+        <div class="stat-label">교차참조</div>
+      </div>
+      <div class="stat-card animate-in">
+        <div class="stat-number">${SOP_DATA.categories.length}</div>
+        <div class="stat-label">관제 분야</div>
+      </div>
+    </div>
+
+    <div class="home-category-grid">`;
+
+  SOP_DATA.categories.forEach(cat => {
+    const alarms = SOP_DATA.alarms.filter(a => a.category === cat.id);
+    const critCount = alarms.filter(a => a.severity === 'critical').length;
+
+    html += `<div class="cat-card animate-in" data-cat="${cat.id}"
+      onclick="filterCategory('${cat.id}')">
+      <div class="cat-card-icon">${cat.icon}</div>
+      <div class="cat-card-name">${cat.name}</div>
+      <div class="cat-card-desc">${cat.description}</div>
+      <div class="cat-card-count">${alarms.length}개 SOP${critCount ? ' · 긴급 ' + critCount + '건' : ''}</div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function filterCategory(catId) {
+  const firstAlarm = SOP_DATA.alarms.find(a => a.category === catId);
+  if (firstAlarm) showSOP(firstAlarm.id);
+}
+
+// ─── SOP 상세 ────────────────────────────────────────
+function showSOP(alarmId) {
+  const alarm = getAlarm(alarmId);
+  if (!alarm) return;
+
+  // 사이드바 active
+  document.querySelectorAll('.sidebar-alarm-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + alarmId);
+  if (navEl) navEl.classList.add('active');
+
+  const catMap = getCatMap();
+  const cat = catMap[alarm.category];
+  const sev = getSevInfo(alarm.severity);
+
+  let html = `<div class="sop-view" style="display:block">
+    <button class="sop-back" onclick="showHome()">← 홈으로</button>`;
+
+  // 헤더
+  html += `<div class="sop-header animate-in" data-sev="${alarm.severity}">
+    <div class="sop-header-top">
+      <span class="sop-header-id">${alarm.id}</span>
+      <span class="sev-badge ${alarm.severity}">${sev.name} · ${sev.response_time}</span>
+    </div>
+    <div class="sop-header-title">${cat.icon} ${alarm.name}</div>
+    <div class="sop-header-desc">${alarm.description}</div>
+    <div class="sop-header-tags">
+      ${(alarm.tags || []).map(t => `<span class="sop-tag">${t}</span>`).join('')}
+    </div>
+  </div>`;
+
+  // Case 분류
+  const caseCls = alarm.case_classification || {};
+  if (caseCls.enabled && caseCls.cases) {
+    html += `<div class="case-section animate-in">
+      <div class="section-title">📊 Case 분류</div>
+      <div class="case-grid">`;
+
+    caseCls.cases.forEach(c => {
+      html += `<div class="case-card" style="border-left:3px solid ${c.color}">
+        <div class="case-card-name" style="color:${c.color}">${c.name}</div>
+        <div class="case-card-cond">${c.condition}</div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  }
+
+  // SOP 단계
+  html += `<div class="steps-section animate-in">
+    <div class="section-title">📝 대응 절차 (${alarm.sop_steps.length}단계)</div>`;
+
+  alarm.sop_steps.forEach(step => {
+    const isUrgent = step.time_limit.includes('즉시') || step.time_limit.includes('30초');
+    const timeClass = isUrgent ? 'time-urgent' : '';
+
+    html += `<div class="step-item">
+      <div class="step-num">${step.step}</div>
+      <div class="step-content">
+        <div class="step-action">${step.action}</div>
+        <div class="step-detail">${step.detail}</div>
+        <div class="step-meta">
+          <span class="step-meta-item">👤 ${step.responsible}</span>
+          <span class="step-meta-item ${timeClass}">⏱ ${step.time_limit}</span>
+          ${(step.tools || []).map(t => `<span class="step-meta-item">🛠 ${t}</span>`).join('')}
+        </div>`;
+
+    // 교차참조 분기
+    const refs = SOP_DATA.cross_references.filter(cr => cr.from === alarmId && cr.step_from === step.step);
+    refs.forEach(cr => {
+      const target = getAlarm(cr.to);
+      if (target) {
+        html += `<div class="crossref-item" onclick="showSOP('${cr.to}')" style="margin-top:10px">
+          <span class="crossref-arrow">⤷</span>
+          <div>
+            <div><strong>${target.name}</strong> (STEP ${cr.step_to})</div>
+            <div class="crossref-cond">조건: ${cr.condition}</div>
+          </div>
+        </div>`;
+      }
+    });
+
+    html += `</div></div>`;
+  });
+
+  html += `</div>`;
+
+  // 경고사항
+  if (alarm.warnings && alarm.warnings.length) {
+    html += `<div class="warn-section animate-in">
+      <div class="section-title">⚠️ 주의사항</div>`;
+    alarm.warnings.forEach(w => {
+      html += `<div class="warn-item">${w}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // 연락처
+  if (alarm.contacts && alarm.contacts.length) {
+    html += `<div class="contact-section animate-in">
+      <div class="section-title">📞 비상 연락처</div>`;
+    alarm.contacts.forEach(c => {
+      html += `<div class="contact-item">
+        <span class="contact-role">${c.role}</span>
+        <span class="contact-phone">${c.phone}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // 교차참조 (들어오는 것)
+  const incomingRefs = SOP_DATA.cross_references.filter(cr => cr.to === alarmId);
+  if (incomingRefs.length) {
+    html += `<div class="crossref-section animate-in">
+      <div class="section-title">🔗 이 SOP로 전환되는 경우</div>`;
+    incomingRefs.forEach(cr => {
+      const source = getAlarm(cr.from);
+      if (source) {
+        html += `<div class="crossref-item" onclick="showSOP('${cr.from}')">
+          <span class="crossref-arrow">←</span>
+          <div>
+            <div><strong>${source.name}</strong> STEP ${cr.step_from}에서</div>
+            <div class="crossref-cond">조건: ${cr.condition}</div>
+          </div>
+        </div>`;
+      }
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+
+  document.getElementById('mainContent').innerHTML = html;
+  document.getElementById('mainContent').scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+// ─── 키보드 단축키 ───────────────────────────────────
+document.addEventListener('keydown', e => {
+  // Ctrl+K 또는 / 로 검색 포커스
+  if ((e.ctrlKey && e.key === 'k') || (e.key === '/' && document.activeElement.tagName !== 'INPUT')) {
+    e.preventDefault();
+    const input = document.getElementById('searchInput');
+    if (input) input.focus();
+  }
+  // Escape로 홈
+  if (e.key === 'Escape') {
+    const input = document.getElementById('searchInput');
+    if (input && document.activeElement === input) {
+      input.value = '';
+      onSearch('');
+      input.blur();
+    } else {
+      showHome();
+    }
+  }
+});
+
+// ─── 시작 ────────────────────────────────────────────
+init();
+</script>
+
+</body>
+</html>
